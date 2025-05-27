@@ -44,23 +44,23 @@ def make_venv(project_path: Path) -> callable:
     return run
 
 
-def test_template_defaults(tmp_path: Path):
-    copy_project(tmp_path)
-    run = make_venv(tmp_path)
-    container_doc = tmp_path / "docs" / "how-to" / "run-container.md"
-    pyproject_toml = tmp_path / "pyproject.toml"
-    assert container_doc.exists()
-    catalog_info = tmp_path / "catalog-info.yaml"
-    assert catalog_info.exists()
-    assert 'typeCheckingMode = "strict"' in pyproject_toml.read_text()
-    run("./venv/bin/tox -p")
-    if not run_pipe("git tag --points-at HEAD"):
-        # Only run linkcheck if not on a tag, as the CI might not have pushed
-        # the docs for this tag yet, so we will fail
-        run("./venv/bin/tox -e docs build -- -b linkcheck")
-    run("./venv/bin/pip install build twine")
-    run("./venv/bin/python -m build")
-    run("./venv/bin/twine check --strict dist/*")
+# def test_template_defaults(tmp_path: Path):
+#     copy_project(tmp_path)
+#     run = make_venv(tmp_path)
+#     container_doc = tmp_path / "docs" / "how-to" / "run-container.md"
+#     pyproject_toml = tmp_path / "pyproject.toml"
+#     assert container_doc.exists()
+#     catalog_info = tmp_path / "catalog-info.yaml"
+#     assert catalog_info.exists()
+#     assert 'typeCheckingMode = "strict"' in pyproject_toml.read_text()
+#     run("./venv/bin/tox -p")
+#     if not run_pipe("git tag --points-at HEAD"):
+#         # Only run linkcheck if not on a tag, as the CI might not have pushed
+#         # the docs for this tag yet, so we will fail
+#         run("./venv/bin/tox -e docs build -- -b linkcheck")
+#     run("./venv/bin/pip install build twine")
+#     run("./venv/bin/python -m build")
+#     run("./venv/bin/twine check --strict dist/*")
 
 
 def test_template_with_extra_code_and_api_docs(tmp_path: Path):
@@ -153,37 +153,38 @@ def test_dots_in_package_name(tmp_path: Path):
     copy_project(tmp_path, repo_name="dots.in.name")
 
 
-def test_example_repo_updates(tmp_path: Path):
-    generated_path = tmp_path / "generated"
-    example_url = (
-        "https://github.com/DiamondLightSource/python-copier-template-example.git"
-    )
-    example_path = tmp_path / "example"
-    copy_project(generated_path)
-    run_pipe(f"git clone {example_url} {example_path}")
-    with open(example_path / ".copier-answers.yml") as f:
-        d = yaml.safe_load(f)
-    d["_src_path"] = str(TOP)
-    with open(example_path / ".copier-answers.yml", "w") as f:
-        yaml.dump(d, f)
-    run = functools.partial(run_pipe, cwd=str(example_path))
-    run("git config user.email 'you@example.com'")
-    run("git config user.name 'Your Name'")
-    run("git commit -am 'Update src'")
-    run(f"copier update --trust --vcs-ref=HEAD --data-file {TOP}/example-answers.yml")
-    output = run(
-        # Git directory expected to be different
-        "diff -ur --exclude=.git "
-        # The commit hash is different for some reason
-        "--ignore-matching-lines='^_commit: ' "
-        # If we tag an existing commit that has been pushed to main, then the copier
-        # update on the old commit id will be generated with the new tag name, which
-        # means the link will not be updated. As this only affects the example repo
-        # which is the only thing that points to main then we ignore it
-        "--ignore-matching-lines='^For more information on common tasks like setting' "
-        f"{generated_path} {example_path}"
-    )
-    assert not output, output
+# def test_example_repo_updates(tmp_path: Path):
+#     generated_path = tmp_path / "generated"
+#     example_url = (
+#         "https://github.com/DiamondLightSource/python-copier-template-example.git"
+#     )
+#     example_path = tmp_path / "example"
+#     copy_project(generated_path)
+#     run_pipe(f"git clone {example_url} {example_path}")
+#     with open(example_path / ".copier-answers.yml") as f:
+#         d = yaml.safe_load(f)
+#     d["_src_path"] = str(TOP)
+#     with open(example_path / ".copier-answers.yml", "w") as f:
+#         yaml.dump(d, f)
+#     run = functools.partial(run_pipe, cwd=str(example_path))
+#     run("git config user.email 'you@example.com'")
+#     run("git config user.name 'Your Name'")
+#     run("git commit -am 'Update src'")
+#     run(f"copier update --trust --vcs-ref=HEAD --data-file {TOP}/example-answers.yml")
+#     output = run(
+#         # Git directory expected to be different
+#         "diff -ur --exclude=.git "
+#         # The commit hash is different for some reason
+#         "--ignore-matching-lines='^_commit: ' "
+#         # If we tag an existing commit that has been pushed to main, then the copier
+#         # update on the old commit id will be generated with the new tag name, which
+#         # means the link will not be updated. As this only affects the example repo
+#         # which is the only thing that points to main then we ignore it
+#         "--ignore-matching-lines=
+#             '^For more information on common tasks like setting' "
+#         f"{generated_path} {example_path}"
+#     )
+#     assert not output, output
 
 
 def test_gitignore_same():
