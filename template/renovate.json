@@ -22,6 +22,7 @@
                 "softprops/action-gh-release",
                 "ytanikin/pr-conventional-commits"
             ],
+            "enabled": false,
             "description": [
                 "Group and update GitHub actions through the copier template to prevent merge conflicts"
             ]
